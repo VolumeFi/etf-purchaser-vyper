@@ -115,8 +115,12 @@ def set_paloma():
 @external
 @payable
 @nonreentrant
-def buy(_etf_token: address, _etf_amount: uint256, _amount_in: uint256, _recipient: address, path: Bytes[204] = b"") -> uint256:
-    return 0
+def buy(_etf_token: address, _etf_amount: uint256, _amount_in: uint256, _recipient: address, path: Bytes[204] = b""):
+    assert _etf_token != empty(address), "Invalid from_token"
+    assert _etf_amount > 0, "Invalid amount"
+    assert _amount_in > 0, "Invalid amount_in"
+    assert _recipient != empty(address), "Invalid recipient"
+    assert self.paloma != empty(bytes32), "Paloma not set"
 
 @external
 @nonreentrant
