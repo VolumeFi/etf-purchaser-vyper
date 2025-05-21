@@ -38,8 +38,6 @@ WETH9: public(immutable(address))
 refund_wallet: public(address)
 compass_evm: public(address)
 paloma: public(bytes32)
-withdraw_nonces: public(HashMap[uint256, bool])
-deposit_nonce: public(uint256)
 
 event UpdateCompass:
     old_compass: address
@@ -51,6 +49,12 @@ event UpdateRefundWallet:
 
 event SetPaloma:
     paloma: bytes32
+
+event Sold:
+    etf_token: address
+    etf_amount: uint256
+    estimated_amount: uint256
+    recipient: address
 
 @deploy
 def __init__(router: address, weth: address, _refund_wallet: address, _compass_evm: address):
@@ -111,13 +115,21 @@ def set_paloma():
 @external
 @payable
 @nonreentrant
-def deposit(recipient: bytes32, amount: uint256, path: Bytes[204] = b"", min_amount: uint256 = 0) -> uint256:
+def buy(_etf_token: address, _etf_amount: uint256, _amount_in: uint256, _recipient: address, path: Bytes[204] = b"") -> uint256:
     return 0
 
 @external
 @nonreentrant
-def withdraw(sender: bytes32, recipient: address, amount: uint256, nonce: uint256):
-    pass
+def sell(_etf_token: address, _etf_amount: uint256, _estimated_amount: uint256, _recipient: address):
+    assert _etf_token != empty(address), "Invalid from_token"
+    assert _etf_amount > 0, "Invalid amount"
+    assert self.paloma != empty(bytes32), "Paloma not set"
+    _compass: address = self.compass_evm
+    _paloma: bytes32 = self.paloma
+    self._safe_transfer_from(_etf_token, msg.sender, self, _etf_amount)
+    self._safe_approve(_etf_token, _compass, _etf_amount)
+    extcall Compass(self.compass_evm).send_token_to_paloma(_etf_token, _paloma, _etf_amount)
+    log Sold(etf_token=_etf_token, etf_amount=_etf_amount, estimated_amount=_estimated_amount, recipient=_recipient)
 
 @external
 @payable
