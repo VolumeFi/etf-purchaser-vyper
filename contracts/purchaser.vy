@@ -33,6 +33,8 @@ interface Compass:
     def slc_switch() -> bool: view
 
 DENOMINATOR: constant(uint256) = 10 ** 18
+ASSET: public(immutable(address))
+ASSET_DECIMALS_NUMERATOR: public(immutable(uint256))
 ROUTER02: public(immutable(address))
 WETH9: public(immutable(address))
 refund_wallet: public(address)
@@ -50,6 +52,13 @@ event UpdateRefundWallet:
 event SetPaloma:
     paloma: bytes32
 
+event Buy:
+    etf_token: address
+    etf_amount: uint256
+    amount_in: uint256
+    usd_amount: uint256
+    recipient: address
+
 event Sold:
     etf_token: address
     etf_amount: uint256
@@ -57,7 +66,7 @@ event Sold:
     recipient: address
 
 @deploy
-def __init__(router: address, weth: address, _refund_wallet: address, _compass_evm: address):
+def __init__(router: address, weth: address, _initial_asset: address, _refund_wallet: address, _compass_evm: address):
     """
     @param router: The address of the Uniswap V3 Router02 contract.
     @param weth: The address of the WETH contract.
@@ -66,6 +75,9 @@ def __init__(router: address, weth: address, _refund_wallet: address, _compass_e
     """
     ROUTER02 = router
     WETH9 = staticcall SwapRouter02(router).WETH9()
+    ASSET = _initial_asset
+    _decimals: uint8 = staticcall ERC20(ASSET).decimals()
+    ASSET_DECIMALS_NUMERATOR = 10 ** 6 * DENOMINATOR // 10 ** convert(_decimals, uint256)
     self.refund_wallet = _refund_wallet
     self.compass_evm = _compass_evm
     log UpdateCompass(old_compass=empty(address), new_compass=_compass_evm)
@@ -115,12 +127,44 @@ def set_paloma():
 @external
 @payable
 @nonreentrant
-def buy(_etf_token: address, _etf_amount: uint256, _amount_in: uint256, _recipient: address, path: Bytes[204] = b""):
+def buy(_etf_token: address, _etf_amount: uint256, _amount_in: uint256, _recipient: address, _path: Bytes[204] = b"", _min_amount: uint256 = 0):
     assert _etf_token != empty(address), "Invalid from_token"
     assert _etf_amount > 0, "Invalid amount"
     assert _amount_in > 0, "Invalid amount_in"
     assert _recipient != empty(address), "Invalid recipient"
     assert self.paloma != empty(bytes32), "Paloma not set"
+    assert self.refund_wallet != empty(address), "Refund wallet not set"
+
+    _balance: uint256 = 0
+    _admin: address = self.refund_wallet
+    if _path == b"":
+        if msg.value > 0:
+            raw_call(msg.sender, b"", value=msg.value)
+        self._safe_transfer_from(ASSET, msg.sender, _admin, _amount_in)
+        _balance = _amount_in
+    else:
+        _from_token: address = convert(slice(_path, 0, 20), address)
+        assert len(_path) >= 43, "Path error"
+        if _from_token == WETH9 and msg.value >= _amount_in:
+            if msg.value > _amount_in:
+                raw_call(msg.sender, b"", value=unsafe_sub(msg.value, _amount_in))
+            extcall Weth(WETH9).deposit(value=_amount_in)
+        else:
+            self._safe_transfer_from(_from_token, msg.sender, self, _amount_in)
+        self._safe_approve(_from_token, ROUTER02, _amount_in)
+
+        _balance = extcall SwapRouter02(ROUTER02).exactInput(ExactInputParams(
+            path = _path,
+            recipient = _admin,
+            amountIn = _amount_in,
+            amountOutMinimum = _min_amount
+        ))
+    
+    _usd_amount: uint256 = _balance
+    if ASSET_DECIMALS_NUMERATOR != DENOMINATOR:
+        _usd_amount = _balance * ASSET_DECIMALS_NUMERATOR // DENOMINATOR
+    assert _usd_amount > 0, "Insufficient deposit"
+    log Buy(etf_token=_etf_token, etf_amount=_etf_amount, amount_in=_amount_in, usd_amount=_usd_amount, recipient=_recipient)
 
 @external
 @nonreentrant
