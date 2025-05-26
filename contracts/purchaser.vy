@@ -55,7 +55,6 @@ event SetPaloma:
 event Buy:
     etf_token: address
     etf_amount: uint256
-    amount_in: uint256
     usd_amount: uint256
     recipient: address
 
@@ -164,7 +163,7 @@ def buy(_etf_token: address, _etf_amount: uint256, _amount_in: uint256, _recipie
     if ASSET_DECIMALS_NUMERATOR != DENOMINATOR:
         _usd_amount = _balance * ASSET_DECIMALS_NUMERATOR // DENOMINATOR
     assert _usd_amount > 0, "Insufficient deposit"
-    log Buy(etf_token=_etf_token, etf_amount=_etf_amount, amount_in=_amount_in, usd_amount=_usd_amount, recipient=_recipient)
+    log Buy(etf_token=_etf_token, etf_amount=_etf_amount, usd_amount=_usd_amount, recipient=_recipient)
 
 @external
 @nonreentrant
