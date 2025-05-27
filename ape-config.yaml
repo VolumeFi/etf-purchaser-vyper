@@ -1,1 +1,55 @@
 name: etf-purchaser-vyper
+
+vyper:
+  version: 0.4.1
+  evm_version: cancun
+
+node:
+  arbitrum:
+    mainnet:
+      uri: https://arbitrum-one-rpc.publicnode.com
+
+foundry:
+  fork:
+    ethereum:
+      mainnet:
+        upstream_provider: alchemy
+        gas_limit:
+          auto:
+            multiplier: 1.2  # Multiply 1.2 times the result of eth_estimateGas
+    arbitrum:
+      mainnet:
+        upstream_provider: alchemy
+hardhat:
+  fork:
+    ethereum:
+      mainnet:
+        upstream_provider: alchemy
+    arbitrum:
+      mainnet:
+        upstream_provider: alchemy
+ethereum:
+  default_network: mainnet-fork
+  mainnet_fork:
+    default_provider: foundry
+    gas_limit:
+      auto:
+        multiplier: 1.2  # Multiply 1.2 times the result of eth_estimateGas
+
+arbitrum:
+  default_network: mainnet-fork
+  mainnet_fork:
+    default_provider: foundry
+geth:
+  gnosis:
+    mainnet:
+      uri: https://rpc.gnosischain.com/
+  arbitrum:
+    mainnet:
+      uri: https://arb1.arbitrum.io/rpc/
+  base:
+    mainnet:
+      uri: https://mainnet.base.org/
+  optimism:
+    mainnet:
+      uri: https://mainnet.optimism.io/
