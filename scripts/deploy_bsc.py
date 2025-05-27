@@ -2,12 +2,12 @@ from ape import accounts, project, networks
 
 def main():
     acct = accounts.load("Deployer")
-    router = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"   # Uniswap V3 Router
-    initial_asset = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"  # USDC
+    router = "0xB971eF87ede563556b2ED4b1C0b0019111Dd85d2"   # Uniswap V3 Router
+    initial_asset = "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d"  # USDC
     refund_wallet = "0xCdE7fB746AF9C308F10D1df56caF45ac3048653c"
-    compass = "0x3c1864a873879139C1BD87c7D95c4e475A91d19C" 
+    compass = "0xEb1981B0bC9C8ED8eE5F95D5ad0494B848020413" 
 
-    with networks.parse_network_choice("arbitrum:mainnet:alchemy") as provider:
+    with networks.parse_network_choice("bsc:mainnet") as provider:
         priority_fee = int(networks.active_provider.priority_fee * 1.2)
         base_fee = int(networks.active_provider.base_fee * 1.2 + priority_fee)
         purchaser = project.purchaser.deploy(
