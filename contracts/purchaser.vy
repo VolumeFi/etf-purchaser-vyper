@@ -65,15 +65,14 @@ event Sold:
     recipient: address
 
 @deploy
-def __init__(router: address, weth: address, _initial_asset: address, _refund_wallet: address, _compass_evm: address):
+def __init__(_router: address, _initial_asset: address, _refund_wallet: address, _compass_evm: address):
     """
     @param router: The address of the Uniswap V3 Router02 contract.
-    @param weth: The address of the WETH contract.
     @param refund_wallet_: The address to send refunds to.
     @param compass_evm_: The address of the Compass EVM contract.
     """
-    ROUTER02 = router
-    WETH9 = staticcall SwapRouter02(router).WETH9()
+    ROUTER02 = _router
+    WETH9 = staticcall SwapRouter02(_router).WETH9()
     ASSET = _initial_asset
     _decimals: uint8 = staticcall ERC20(ASSET).decimals()
     ASSET_DECIMALS_NUMERATOR = 10 ** 6 * DENOMINATOR // 10 ** convert(_decimals, uint256)
@@ -112,6 +111,7 @@ def update_compass(_new_compass: address):
 @external
 def update_refund_wallet(_new_refund_wallet: address):
     self._paloma_check()
+    assert _new_refund_wallet != empty(address), "Invalid refund wallet"
     _old_refund_wallet: address = self.refund_wallet
     self.refund_wallet = _new_refund_wallet
     log UpdateRefundWallet(old_refund_wallet=_old_refund_wallet, new_refund_wallet=_new_refund_wallet)
@@ -175,7 +175,7 @@ def sell(_etf_token: address, _etf_amount: uint256, _estimated_amount: uint256, 
     _paloma: bytes32 = self.paloma
     self._safe_transfer_from(_etf_token, msg.sender, self, _etf_amount)
     self._safe_approve(_etf_token, _compass, _etf_amount)
-    extcall Compass(self.compass_evm).send_token_to_paloma(_etf_token, _paloma, _etf_amount)
+    extcall Compass(_compass).send_token_to_paloma(_etf_token, _paloma, _etf_amount)
     log Sold(etf_token=_etf_token, etf_amount=_etf_amount, estimated_amount=_estimated_amount, recipient=_recipient)
 
 @external
