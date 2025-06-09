@@ -40,6 +40,14 @@ arbitrum:
   default_network: mainnet-fork
   mainnet_fork:
     default_provider: foundry
+
+bsc:
+  default_provider: node
+  node:
+    uri: https://bsc-dataseed.binance.org/
+    middlewares:
+      - geth_poa_middleware
+
 geth:
   gnosis:
     mainnet:
@@ -53,3 +61,6 @@ geth:
   optimism:
     mainnet:
       uri: https://mainnet.optimism.io/
+  bsc:
+    mainnet:
+      uri: https://bsc-dataseed.binance.org/

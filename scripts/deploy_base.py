@@ -3,7 +3,8 @@ from ape import accounts, project, networks
 def main():
     acct = accounts.load("Deployer")
     router = "0x2626664c2603336E57B271c5C0b26F421741e481"   # Uniswap V3 Router
-    initial_asset = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"  # USDC
+    # initial_asset = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"  # USDC
+    initial_asset = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"  # USDT
     refund_wallet = "0xCdE7fB746AF9C308F10D1df56caF45ac3048653c"
     compass = "0x105230D0ee3ADB4E07654Eb35ad88E32Be791814" 
 
