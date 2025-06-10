@@ -7,7 +7,9 @@ def main():
     initial_asset = "0x55d398326f99059fF775485246999027B3197955"  # USDT
     refund_wallet = "0xCdE7fB746AF9C308F10D1df56caF45ac3048653c"
     compass = "0xEb1981B0bC9C8ED8eE5F95D5ad0494B848020413" 
-
+    fee = 0
+    fee_address = "0x7C303D43aDF7055ff3Ef88c525803D3ABBDD2860"
+    
     with networks.parse_network_choice("bsc:mainnet") as provider:
         priority_fee = int(networks.active_provider.priority_fee * 1.2)
         base_fee = int(networks.active_provider.base_fee * 1.2 + priority_fee)
@@ -16,6 +18,8 @@ def main():
             initial_asset,
             refund_wallet,
             compass,
+            fee,
+            fee_address,
             max_fee=base_fee,
             max_priority_fee=priority_fee,
             sender=acct,

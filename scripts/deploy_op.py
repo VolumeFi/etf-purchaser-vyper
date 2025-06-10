@@ -7,7 +7,9 @@ def main():
     initial_asset = "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"  # USDT
     refund_wallet = "0xCdE7fB746AF9C308F10D1df56caF45ac3048653c"
     compass = "0xa41886cFA7f2d8cE8Dc15670DDD25eD890822856" 
-
+    fee = 0
+    fee_address = "0x7C303D43aDF7055ff3Ef88c525803D3ABBDD2860"
+    
     with networks.parse_network_choice("optimism:mainnet:alchemy") as provider:
         priority_fee = int(networks.active_provider.priority_fee * 1.2)
         base_fee = int(networks.active_provider.base_fee * 1.2 + priority_fee)
@@ -16,6 +18,8 @@ def main():
             initial_asset,
             refund_wallet,
             compass,
+            fee,
+            fee_address,
             max_fee=base_fee,
             max_priority_fee=priority_fee,
             sender=acct,

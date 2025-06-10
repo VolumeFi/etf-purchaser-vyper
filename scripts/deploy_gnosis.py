@@ -7,7 +7,9 @@ def main():
     initial_asset = "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d"  # USDT
     refund_wallet = "0xCdE7fB746AF9C308F10D1df56caF45ac3048653c"
     compass = "0xc2A1a1bD4018cFAA744dD5Fb9D0c06f460e1C63A" 
-
+    fee = 0
+    fee_address = "0x7C303D43aDF7055ff3Ef88c525803D3ABBDD2860"
+    
     with networks.parse_network_choice("gnosis:mainnet:alchemy") as provider:
         priority_fee = int(networks.active_provider.priority_fee * 1.2)
         base_fee = int(networks.active_provider.base_fee * 1.2 + priority_fee)
@@ -16,6 +18,8 @@ def main():
             initial_asset,
             refund_wallet,
             compass,
+            fee,
+            fee_address,
             max_fee=base_fee,
             max_priority_fee=priority_fee,
             sender=acct,

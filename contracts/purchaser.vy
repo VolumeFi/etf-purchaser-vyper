@@ -40,6 +40,8 @@ WETH9: public(immutable(address))
 refund_wallet: public(address)
 compass_evm: public(address)
 paloma: public(bytes32)
+fee: public(uint256)
+fee_receiver: public(address)
 
 event UpdateCompass:
     old_compass: address
@@ -48,6 +50,14 @@ event UpdateCompass:
 event UpdateRefundWallet:
     old_refund_wallet: address
     new_refund_wallet: address
+
+event UpdateFee:
+    old_fee: uint256
+    new_fee: uint256
+
+event UpdateFeeReceiver:
+    old_fee_receiver: address
+    new_fee_receiver: address
 
 event SetPaloma:
     paloma: bytes32
@@ -64,8 +74,44 @@ event Sold:
     estimated_amount: uint256
     recipient: address
 
+event CreateSingleETF:
+    token_name: String[64]
+    token_symbol: String[32]
+    token_description: String[256]
+    etf_ticker: String[40]
+    expense_ratio: uint256
+
+event RegisterSingleETF:
+    etf_token_denom: bytes32
+    etf_token_name: String[64]
+    etf_token_symbol: String[32]
+    etf_token_description: String[256]
+    etf_ticker: String[40]
+    expense_ratio: uint256
+
+event CreateCompositeETF:
+    etf_token_name: String[64]
+    etf_token_symbol: String[32]
+    etf_token_description: String[256]
+    expense_ratio: uint256
+    token0_denom: bytes32
+    token0_position: uint256
+    token1_denom: bytes32
+    token1_position: uint256
+
+event RegisterCompositeETF:
+    etf_token_denom: bytes32
+    etf_token_name: String[64]
+    etf_token_symbol: String[32]
+    etf_token_description: String[256]
+    expense_ratio: uint256
+    token0_denom: bytes32
+    token0_position: uint256
+    token1_denom: bytes32
+    token1_position: uint256
+
 @deploy
-def __init__(_router: address, _initial_asset: address, _refund_wallet: address, _compass_evm: address):
+def __init__(_router: address, _initial_asset: address, _refund_wallet: address, _compass_evm: address, _fee: uint256, _fee_receiver: address):
     """
     @param router: The address of the Uniswap V3 Router02 contract.
     @param refund_wallet_: The address to send refunds to.
@@ -78,8 +124,12 @@ def __init__(_router: address, _initial_asset: address, _refund_wallet: address,
     ASSET_DECIMALS_NUMERATOR = 10 ** 6 * DENOMINATOR // 10 ** convert(_decimals, uint256)
     self.refund_wallet = _refund_wallet
     self.compass_evm = _compass_evm
+    self.fee = _fee
+    self.fee_receiver = _fee_receiver
     log UpdateCompass(old_compass=empty(address), new_compass=_compass_evm)
     log UpdateRefundWallet(old_refund_wallet=empty(address), new_refund_wallet=_refund_wallet)
+    log UpdateFee(old_fee=0, new_fee=_fee)
+    log UpdateFeeReceiver(old_fee_receiver=empty(address), new_fee_receiver=_fee_receiver)
 
 @internal
 def _paloma_check():
@@ -117,11 +167,145 @@ def update_refund_wallet(_new_refund_wallet: address):
     log UpdateRefundWallet(old_refund_wallet=_old_refund_wallet, new_refund_wallet=_new_refund_wallet)
 
 @external
+def update_fee(_new_fee: uint256):
+    self._paloma_check()
+    assert _new_fee >= 0, "Invalid fee"
+    _old_fee: uint256 = self.fee
+    self.fee = _new_fee
+    log UpdateFee(old_fee=_old_fee, new_fee=_new_fee)
+
+@external
+def update_fee_receiver(_new_fee_receiver: address):
+    self._paloma_check()
+    assert _new_fee_receiver != empty(address), "Invalid fee receiver"
+    _old_fee_receiver: address = self.fee_receiver
+    self.fee_receiver = _new_fee_receiver
+    log UpdateFeeReceiver(old_fee_receiver=_old_fee_receiver, new_fee_receiver=_new_fee_receiver)
+
+@external
 def set_paloma():
     assert msg.sender == self.compass_evm and self.paloma == empty(bytes32) and len(msg.data) == 36, "Unauthorized"
     _paloma: bytes32 = convert(slice(msg.data, 4, 32), bytes32)
     self.paloma = _paloma
     log SetPaloma(paloma=_paloma)
+
+@external
+@payable
+@nonreentrant
+def create_signle_etf(_token_name: String[64], _token_symbol: String[32], _token_description: String[256], _etf_ticker: String[40], _expense_ratio: uint256):
+    assert _token_name != "", "Invalid token name"
+    assert _token_symbol != "", "Invalid token symbol"
+    assert _etf_ticker != "", "Invalid ETF ticker"
+    assert self.fee_receiver != empty(address), "Fee receiver not set"
+    assert _expense_ratio <= 1000000, "Invalid expense ratio"
+    # transfer fee amount to fee receiver
+    if self.fee > 0:
+        assert msg.value >= self.fee, "Insufficient fee"
+        if msg.value > self.fee:
+            raw_call(msg.sender, b"", value=unsafe_sub(msg.value, self.fee))
+        send(self.fee_receiver, self.fee)
+    
+    log CreateSingleETF(
+        token_name=_token_name,
+        token_symbol=_token_symbol,
+        token_description=_token_description,
+        etf_ticker=_etf_ticker,
+        expense_ratio=_expense_ratio
+    )
+
+@external
+@payable
+@nonreentrant
+def register_single_etf(_etf_token_denom: bytes32, _etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _etf_ticker: String[40], _expense_ratio: uint256):
+    assert _etf_token_denom != empty(bytes32), "Invalid ETF token address"
+    assert _etf_token_name != "", "Invalid ETF token name"
+    assert _etf_token_symbol != "", "Invalid ETF token symbol"
+    assert _etf_ticker != "", "Invalid ETF ticker"
+    assert self.fee_receiver != empty(address), "Fee receiver not set"
+    assert _expense_ratio <= 1000000, "Invalid expense ratio"
+    # transfer fee amount to fee receiver
+    if self.fee > 0:
+        assert msg.value >= self.fee, "Insufficient fee"
+        if msg.value > self.fee:
+            raw_call(msg.sender, b"", value=unsafe_sub(msg.value, self.fee))
+        send(self.fee_receiver, self.fee)
+
+    log RegisterSingleETF(
+        etf_token_denom=_etf_token_denom,
+        etf_token_name=_etf_token_name,
+        etf_token_symbol=_etf_token_symbol,
+        etf_token_description=_etf_token_description,
+        etf_ticker=_etf_ticker,
+        expense_ratio=_expense_ratio
+    )
+
+@external
+@payable
+@nonreentrant
+def create_composite_etf(_etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _expense_ratio: uint256, _token0_denom: bytes32, _token0_position: uint256, _token1_denom: bytes32, _token1_position: uint256):
+    assert _etf_token_name != "", "Invalid token name"
+    assert _etf_token_symbol != "", "Invalid token symbol"
+    assert _expense_ratio <= 1000000, "Invalid expense ratio"
+    assert _token0_denom != empty(bytes32), "Invalid token0 denom"
+    assert _token1_denom != empty(bytes32), "Invalid token1 denom"
+    assert _token0_position > 0, "Invalid token0 position"
+    assert _token1_position > 0, "Invalid token1 position"
+    assert _token0_denom != _token1_denom, "Token0 and Token1 cannot be the same"
+    assert _token0_position + _token1_position == 100, "Token pos must sum to 100"
+    assert self.fee_receiver != empty(address), "Fee receiver not set"
+
+    # transfer fee amount to fee receiver
+    if self.fee > 0:
+        assert msg.value >= self.fee, "Insufficient fee"
+        if msg.value > self.fee:
+            raw_call(msg.sender, b"", value=unsafe_sub(msg.value, self.fee))
+        send(self.fee_receiver, self.fee)
+
+    log CreateCompositeETF(
+        etf_token_name=_etf_token_name,
+        etf_token_symbol=_etf_token_symbol,
+        etf_token_description=_etf_token_description,
+        expense_ratio=_expense_ratio,
+        token0_denom=_token0_denom,
+        token0_position=_token0_position,
+        token1_denom=_token1_denom,
+        token1_position=_token1_position
+    )
+
+@external
+@payable
+@nonreentrant
+def register_composite_etf(_etf_token_denom: bytes32, _etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _expense_ratio: uint256, _token0_denom: bytes32, _token0_position: uint256, _token1_denom: bytes32, _token1_position: uint256):
+    assert _etf_token_denom != empty(bytes32), "Invalid ETF token address"
+    assert _etf_token_name != "", "Invalid ETF token name"
+    assert _etf_token_symbol != "", "Invalid ETF token symbol"
+    assert _expense_ratio <= 1000000, "Invalid expense ratio"
+    assert _token0_denom != empty(bytes32), "Invalid token0 denom"
+    assert _token1_denom != empty(bytes32), "Invalid token1 denom"
+    assert _token0_position > 0, "Invalid token0 position"
+    assert _token1_position > 0, "Invalid token1 position"
+    assert _token0_denom != _token1_denom, "Token0 and Token1 cannot be the same"
+    assert _token0_position + _token1_position == 100, "Token pos must sum to 100"
+    assert self.fee_receiver != empty(address), "Fee receiver not set"
+
+    # transfer fee amount to fee receiver
+    if self.fee > 0:
+        assert msg.value >= self.fee, "Insufficient fee"
+        if msg.value > self.fee:
+            raw_call(msg.sender, b"", value=unsafe_sub(msg.value, self.fee))
+        send(self.fee_receiver, self.fee)
+
+    log RegisterCompositeETF(
+        etf_token_denom=_etf_token_denom,
+        etf_token_name=_etf_token_name,
+        etf_token_symbol=_etf_token_symbol,
+        etf_token_description=_etf_token_description,
+        expense_ratio=_expense_ratio,
+        token0_denom=_token0_denom,
+        token0_position=_token0_position,
+        token1_denom=_token1_denom,
+        token1_position=_token1_position
+    )
 
 @external
 @payable
