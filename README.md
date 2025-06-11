@@ -1,11 +1,11 @@
-#ETF Purchaser Contract
+# ETF Purchaser Contract
 
-##Overview
+## Overview
 This contract is designed to facilitate the purchase of ETFs (Exchange-Traded Funds) on the Ethereum blockchain. It allows users to buy and sell ETFs using a variety of assets, including Ether and other ERC-20 tokens.
 
-##Functionality
+## Functionality
 
-###The contract provides the following functionality:
+### The contract provides the following functionality:
 
  - Buy: Allows users to purchase ETFs using a specified asset.
  - Sell: Allows users to sell ETFs and receive a specified asset in return.
@@ -18,9 +18,9 @@ This contract is designed to facilitate the purchase of ETFs (Exchange-Traded Fu
  - Update Fee: Allows the update of the fee amount.
  - Update Fee Receiver: Allows the update of the fee receiver address.
 
-##Events
+## Events
 
-###The contract emits the following events:
+### The contract emits the following events:
 
  - Buy: Emitted when a user purchases an ETF.
  - Sell: Emitted when a user sells an ETF.
@@ -33,9 +33,9 @@ This contract is designed to facilitate the purchase of ETFs (Exchange-Traded Fu
  - Update Fee: Emitted when the fee amount is updated.
  - Update Fee Receiver: Emitted when the fee receiver address is updated.
 
-##Dependencies
+## Dependencies
 
-###The contract depends on the following external contracts:
+### The contract depends on the following external contracts:
 
  - ERC20: The ERC20 token standard.
  - SwapRouter02: The Uniswap V3 SwapRouter02 contract.
