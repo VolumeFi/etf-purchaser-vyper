@@ -82,7 +82,7 @@ event CreateSingleETF:
     expense_ratio: uint256
 
 event RegisterSingleETF:
-    etf_token_denom: bytes32
+    etf_token_denom: String[96]
     etf_token_name: String[64]
     etf_token_symbol: String[32]
     etf_token_description: String[256]
@@ -94,20 +94,20 @@ event CreateCompositeETF:
     etf_token_symbol: String[32]
     etf_token_description: String[256]
     expense_ratio: uint256
-    token0_denom: bytes32
+    token0_denom: String[96]
     token0_position: uint256
-    token1_denom: bytes32
+    token1_denom: String[96]
     token1_position: uint256
 
 event RegisterCompositeETF:
-    etf_token_denom: bytes32
+    etf_token_denom: String[96]
     etf_token_name: String[64]
     etf_token_symbol: String[32]
     etf_token_description: String[256]
     expense_ratio: uint256
-    token0_denom: bytes32
+    token0_denom: String[96]
     token0_position: uint256
-    token1_denom: bytes32
+    token1_denom: String[96]
     token1_position: uint256
 
 @deploy
@@ -216,8 +216,8 @@ def create_signle_etf(_token_name: String[64], _token_symbol: String[32], _token
 @external
 @payable
 @nonreentrant
-def register_single_etf(_etf_token_denom: bytes32, _etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _etf_ticker: String[40], _expense_ratio: uint256):
-    assert _etf_token_denom != empty(bytes32), "Invalid ETF token address"
+def register_single_etf(_etf_token_denom: String[96], _etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _etf_ticker: String[40], _expense_ratio: uint256):
+    assert _etf_token_denom != "", "Invalid ETF token address"
     assert _etf_token_name != "", "Invalid ETF token name"
     assert _etf_token_symbol != "", "Invalid ETF token symbol"
     assert _etf_ticker != "", "Invalid ETF ticker"
@@ -242,12 +242,12 @@ def register_single_etf(_etf_token_denom: bytes32, _etf_token_name: String[64], 
 @external
 @payable
 @nonreentrant
-def create_composite_etf(_etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _expense_ratio: uint256, _token0_denom: bytes32, _token0_position: uint256, _token1_denom: bytes32, _token1_position: uint256):
+def create_composite_etf(_etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _expense_ratio: uint256, _token0_denom: String[96], _token0_position: uint256, _token1_denom: String[96], _token1_position: uint256):
     assert _etf_token_name != "", "Invalid token name"
     assert _etf_token_symbol != "", "Invalid token symbol"
     assert _expense_ratio <= 1000000, "Invalid expense ratio"
-    assert _token0_denom != empty(bytes32), "Invalid token0 denom"
-    assert _token1_denom != empty(bytes32), "Invalid token1 denom"
+    assert _token0_denom != "", "Invalid token0 denom"
+    assert _token1_denom != "", "Invalid token1 denom"
     assert _token0_position > 0, "Invalid token0 position"
     assert _token1_position > 0, "Invalid token1 position"
     assert _token0_denom != _token1_denom, "Token0 and Token1 cannot be the same"
@@ -275,13 +275,13 @@ def create_composite_etf(_etf_token_name: String[64], _etf_token_symbol: String[
 @external
 @payable
 @nonreentrant
-def register_composite_etf(_etf_token_denom: bytes32, _etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _expense_ratio: uint256, _token0_denom: bytes32, _token0_position: uint256, _token1_denom: bytes32, _token1_position: uint256):
-    assert _etf_token_denom != empty(bytes32), "Invalid ETF token address"
+def register_composite_etf(_etf_token_denom: String[96], _etf_token_name: String[64], _etf_token_symbol: String[32], _etf_token_description: String[256], _expense_ratio: uint256, _token0_denom: String[96], _token0_position: uint256, _token1_denom: String[96], _token1_position: uint256):
+    assert _etf_token_denom != "", "Invalid ETF token address"
     assert _etf_token_name != "", "Invalid ETF token name"
     assert _etf_token_symbol != "", "Invalid ETF token symbol"
     assert _expense_ratio <= 1000000, "Invalid expense ratio"
-    assert _token0_denom != empty(bytes32), "Invalid token0 denom"
-    assert _token1_denom != empty(bytes32), "Invalid token1 denom"
+    assert _token0_denom != "", "Invalid token0 denom"
+    assert _token1_denom != "", "Invalid token1 denom"
     assert _token0_position > 0, "Invalid token0 position"
     assert _token1_position > 0, "Invalid token1 position"
     assert _token0_denom != _token1_denom, "Token0 and Token1 cannot be the same"
