@@ -171,7 +171,7 @@ purchaser.create_signle_etf(
 ```python
 # Register existing single ETF
 purchaser.register_single_etf(
-    "ibc/BTCETF123",
+    "factory/paloma1k8c2m5cn322akk5wy8lpt87dd2f4yh9afcd7pv/TICKER.123",
     "Bitcoin ETF",
     "BTCETF",
     "Bitcoin Exchange Traded Fund",
@@ -211,9 +211,9 @@ purchaser.create_composite_etf(
     "BTCETH",
     "60% Bitcoin, 40% Ethereum ETF",
     3000,  # 0.3%
-    "ibc/BTC123",
+    "factory/paloma1k8c2m5cn322akk5wy8lpt87dd2f4yh9afcd7pv/BTC.123",
     60,
-    "ibc/ETH456",
+    "factory/paloma1k8c2m5cn322akk5wy8lpt87dd2f4yh9afcd7pv/ETH.456",
     40,
     value=0,
     sender=user
@@ -233,14 +233,14 @@ purchaser.create_composite_etf(
 ```python
 # Register existing composite ETF
 purchaser.register_composite_etf(
-    "ibc/BTCETH123",
+    "factory/paloma1k8c2m5cn322akk5wy8lpt87dd2f4yh9afcd7pv/BTCETH.123",
     "Bitcoin Ethereum ETF",
     "BTCETH",
     "60% Bitcoin, 40% Ethereum ETF",
     3000,
-    "ibc/BTC123",
+    "factory/paloma1k8c2m5cn322akk5wy8lpt87dd2f4yh9afcd7pv/BTC.123",
     60,
-    "ibc/ETH456",
+    "factory/paloma1k8c2m5cn322akk5wy8lpt87dd2f4yh9afcd7pv/ETH.456",
     40,
     value=0,
     sender=user
