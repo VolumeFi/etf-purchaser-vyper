@@ -188,7 +188,7 @@ def set_paloma():
 @external
 @payable
 @nonreentrant
-def create_signle_etf(_token_name: String[64], _token_symbol: String[32], _token_description: String[256], _etf_ticker: String[40], _expense_ratio: uint256):
+def create_single_etf(_token_name: String[64], _token_symbol: String[32], _token_description: String[256], _etf_ticker: String[40], _expense_ratio: uint256):
     assert _token_name != "", "Invalid token name"
     assert _token_symbol != "", "Invalid token symbol"
     assert _etf_ticker != "", "Invalid ETF ticker"
